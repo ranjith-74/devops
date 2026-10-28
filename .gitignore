@@ -1,0 +1,12 @@
+# Environment and secrets
+.env
+.env.local
+*.bak
+
+# Python artifacts
+__pycache__/
+*.pyc
+
+# Docker/OS artifacts
+.DS_Store
+Thumbs.db

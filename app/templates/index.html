@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrderFlow — Order Management System</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --surface-color: #111827;
+            --surface-hover: #1f2937;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --success-bg: rgba(16, 185, 129, 0.15);
+            --danger: #ef4444;
+            --danger-bg: rgba(239, 68, 68, 0.15);
+            --warning: #f59e0b;
+            --warning-bg: rgba(245, 158, 11, 0.15);
+            --purple: #8b5cf6;
+            --purple-bg: rgba(139, 92, 246, 0.15);
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --transition: all 0.2s ease-in-out;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navigation Header */
+        header {
+            background-color: var(--surface-color);
+            border-bottom: 1px solid var(--card-border);
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(8px);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .logo-title {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--text-primary);
+        }
+
+        .logo-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            background-color: var(--success-bg);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .nav-link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .nav-link-btn:hover {
+            color: var(--text-primary);
+            border-color: var(--primary);
+            background-color: var(--surface-hover);
+        }
+
+        /* Telemetry Bar */
+        .telemetry-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+            margin: 24px 0;
+        }
+
+        .metric-chip {
+            background-color: var(--surface-color);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: var(--transition);
+        }
+
+        .metric-chip:hover {
+            border-color: #475569;
+            transform: translateY(-2px);
+        }
+
+        .metric-chip-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-chip-val {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-top: 2px;
+            font-family: var(--font-mono);
+        }
+
+        .metric-chip-icon {
+            font-size: 22px;
+            opacity: 0.8;
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .card-title {
+            font-size: 17px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .form-select, .form-input {
+            width: 100%;
+            padding: 10px 14px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .form-select:focus, .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .form-select option {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        /* Order Summary Preview */
+        .order-preview {
+            background-color: var(--card-bg);
+            border: 1px dashed var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 14px;
+            margin-bottom: 18px;
+        }
+
+        .order-preview-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .order-preview-total {
+            border-top: 1px solid var(--card-border);
+            padding-top: 8px;
+            margin-top: 6px;
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--surface-hover);
+            border-color: #475569;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-bg);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background-color: rgba(239, 68, 68, 0.25);
+            color: #fee2e2;
+        }
+
+        .btn-purple {
+            background-color: var(--purple-bg);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            color: #c4b5fd;
+        }
+
+        .btn-purple:hover:not(:disabled) {
+            background-color: rgba(139, 92, 246, 0.25);
+            color: #ede9fe;
+        }
+
+        .ops-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        /* Console Output Box */
+        .console-box {
+            background-color: var(--bg-color);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: #a5f3fc;
+            min-height: 140px;
+            max-height: 180px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .console-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Orders Table */
+        .table-card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        th {
+            background-color: var(--card-bg);
+            color: var(--text-secondary);
+            font-weight: 600;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--card-border);
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #1e293b;
+            color: var(--text-primary);
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .order-id-badge {
+            font-family: var(--font-mono);
+            color: #93c5fd;
+            background-color: rgba(59, 130, 246, 0.15);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pill.completed {
+            background-color: var(--success-bg);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-pill.processing {
+            background-color: var(--warning-bg);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .signature-text {
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+
+        .latency-badge {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: #cbd5e1;
+        }
+
+        /* Spinner */
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .toast {
+            min-width: 300px;
+            max-width: 420px;
+            padding: 14px 18px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.3s ease-out;
+            transition: var(--transition);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .toast-success {
+            background-color: #064e3b;
+            color: #d1fae5;
+            border-left: 4px solid var(--success);
+        }
+
+        .toast-error {
+            background-color: #7f1d1d;
+            color: #fee2e2;
+            border-left: 4px solid var(--danger);
+        }
+
+        .toast-info {
+            background-color: #1e3a8a;
+            color: #dbeafe;
+            border-left: 4px solid var(--primary);
+        }
+
+        .toast-icon {
+            font-size: 18px;
+        }
+
+        .toast-body {
+            flex-grow: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Header -->
+    <header>
+        <div class="container header-content">
+            <div class="logo-group">
+                <div class="logo-icon">OF</div>
+                <div>
+                    <div class="logo-title">OrderFlow</div>
+                    <div class="logo-subtitle">Order Management System &bull; Live Telemetry</div>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <div class="status-badge" id="app-status-badge">
+                    <span class="status-dot"></span>
+                    <span id="app-status-text">System Online</span>
+                </div>
+                <a href="http://localhost:3000" target="_blank" class="nav-link-btn" title="Open Grafana Dashboard">
+                    📊 Grafana Dashboard
+                </a>
+                <a href="http://localhost:9090" target="_blank" class="nav-link-btn" title="Open Prometheus Targets">
+                    ⚡ Prometheus
+                </a>
+                <a href="/metrics" target="_blank" class="nav-link-btn" title="View Raw Prometheus Metrics">
+                    📈 /metrics
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- Telemetry Metrics Bar -->
+        <div class="telemetry-bar">
+            <div class="metric-chip">
+                <div>
+                    <div class="metric-chip-label">Process CPU</div>
+                    <div class="metric-chip-val" id="metric-cpu">0.0%</div>
+                </div>
+                <div class="metric-chip-icon">⚡</div>
+            </div>
+            <div class="metric-chip">
+                <div>
+                    <div class="metric-chip-label">Resident RAM</div>
+                    <div class="metric-chip-val" id="metric-mem">0.0 MB</div>
+                </div>
+                <div class="metric-chip-icon">💾</div>
+            </div>
+            <div class="metric-chip">
+                <div>
+                    <div class="metric-chip-label">Active Orders</div>
+                    <div class="metric-chip-val" id="metric-orders">0</div>
+                </div>
+                <div class="metric-chip-icon">📦</div>
+            </div>
+            <div class="metric-chip">
+                <div>
+                    <div class="metric-chip-label">Last Latency</div>
+                    <div class="metric-chip-val" id="metric-latency">0 ms</div>
+                </div>
+                <div class="metric-chip-icon">⏱️</div>
+            </div>
+        </div>
+
+        <!-- Main Operational Grid -->
+        <div class="main-grid">
+
+            <!-- Card 1: Create Order Form -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>🛒</span> Create New Order
+                    </div>
+                    <span style="font-size: 12px; color: var(--text-muted);">Triggers SHA-256 CPU Work</span>
+                </div>
+
+                <form id="order-form">
+                    <div class="form-group">
+                        <label class="form-label" for="product-select">Select Product</label>
+                        <select id="product-select" class="form-select">
+                            {% for pid, p in products.items() %}
+                            <option value="{{ pid }}" data-price="{{ p.price }}">{{ p.name }} — ${{ "%.2f"|format(p.price) }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="quantity-input">Quantity</label>
+                        <input type="number" id="quantity-input" class="form-input" min="1" max="50" value="1" required>
+                    </div>
+
+                    <div class="order-preview">
+                        <div class="order-preview-row">
+                            <span>Selected Item:</span>
+                            <span id="preview-item" style="color: var(--text-primary); font-weight: 500;">-</span>
+                        </div>
+                        <div class="order-preview-row">
+                            <span>Unit Price:</span>
+                            <span id="preview-unit-price">$0.00</span>
+                        </div>
+                        <div class="order-preview-row">
+                            <span>Quantity:</span>
+                            <span id="preview-qty">1</span>
+                        </div>
+                        <div class="order-preview-row order-preview-total">
+                            <span>Total Estimated:</span>
+                            <span id="preview-total" style="color: #60a5fa;">$0.00</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-create-order" class="btn btn-primary">
+                        <span id="create-spinner" class="spinner" style="display: none;"></span>
+                        <span id="create-btn-text">🛍️ Create Order</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Card 2: Diagnostics & Operations Controls -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>🛠️</span> Operations & Diagnostics
+                    </div>
+                    <span style="font-size: 12px; color: var(--text-muted);">Real HTTP Endpoints</span>
+                </div>
+
+                <div class="ops-grid">
+                    <button type="button" id="btn-refresh-orders" class="btn btn-secondary">
+                        <span id="refresh-spinner" class="spinner" style="display: none;"></span>
+                        <span>🔄 View/Refresh Orders</span>
+                    </button>
+
+                    <button type="button" id="btn-health-check" class="btn btn-secondary">
+                        <span id="health-spinner" class="spinner" style="display: none;"></span>
+                        <span>🩺 Check Health</span>
+                    </button>
+
+                    <button type="button" id="btn-simulate-error" class="btn btn-danger" title="Simulates a 500 Internal Server Error">
+                        <span id="error-spinner" class="spinner" style="display: none;"></span>
+                        <span>⚠️ Simulate Error (500)</span>
+                    </button>
+
+                    <button type="button" id="btn-heavy-cpu" class="btn btn-purple" title="Triggers heavy CPU prime calculations">
+                        <span id="heavy-spinner" class="spinner" style="display: none;"></span>
+                        <span>⚡ Trigger CPU Spike</span>
+                    </button>
+                </div>
+
+                <div class="console-label">
+                    <span>Diagnostic Log Stream</span>
+                    <span id="console-clear" style="cursor: pointer; color: var(--primary);">Clear</span>
+                </div>
+                <div id="diagnostic-console" class="console-box">[System ready] Interacting with buttons sends real HTTP requests to Flask.</div>
+            </div>
+
+        </div>
+
+        <!-- Orders Table Card -->
+        <div class="table-card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span>📋</span> Order Registry
+                </div>
+                <div style="font-size: 13px; color: var(--text-secondary);">
+                    Total Records: <strong id="orders-count-badge" style="color: var(--primary);">0</strong>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Product Name</th>
+                            <th>Qty</th>
+                            <th>Total ($)</th>
+                            <th>SHA-256 Signature</th>
+                            <th>Latency</th>
+                            <th>Status</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-table-body">
+                        <tr>
+                            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                Loading transactions...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Floating Toast Notifications Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Vanilla JavaScript Application Logic -->
+    <script>
+        // DOM Elements
+        const productSelect = document.getElementById('product-select');
+        const quantityInput = document.getElementById('quantity-input');
+        const previewItem = document.getElementById('preview-item');
+        const previewUnitPrice = document.getElementById('preview-unit-price');
+        const previewQty = document.getElementById('preview-qty');
+        const previewTotal = document.getElementById('preview-total');
+
+        const orderForm = document.getElementById('order-form');
+        const btnCreateOrder = document.getElementById('btn-create-order');
+        const createSpinner = document.getElementById('create-spinner');
+        const createBtnText = document.getElementById('create-btn-text');
+
+        const btnRefreshOrders = document.getElementById('btn-refresh-orders');
+        const refreshSpinner = document.getElementById('refresh-spinner');
+
+        const btnHealthCheck = document.getElementById('btn-health-check');
+        const healthSpinner = document.getElementById('health-spinner');
+
+        const btnSimulateError = document.getElementById('btn-simulate-error');
+        const errorSpinner = document.getElementById('error-spinner');
+
+        const btnHeavyCpu = document.getElementById('btn-heavy-cpu');
+        const heavySpinner = document.getElementById('heavy-spinner');
+
+        const diagnosticConsole = document.getElementById('diagnostic-console');
+        const consoleClear = document.getElementById('console-clear');
+        const ordersTableBody = document.getElementById('orders-table-body');
+        const ordersCountBadge = document.getElementById('orders-count-badge');
+
+        const metricCpu = document.getElementById('metric-cpu');
+        const metricMem = document.getElementById('metric-mem');
+        const metricOrders = document.getElementById('metric-orders');
+        const metricLatency = document.getElementById('metric-latency');
+
+        // Update Order Form Preview
+        function updateOrderPreview() {
+            const selectedOpt = productSelect.options[productSelect.selectedIndex];
+            if (!selectedOpt) return;
+            const price = parseFloat(selectedOpt.getAttribute('data-price')) || 0;
+            const qty = parseInt(quantityInput.value) || 1;
+            const total = price * qty;
+
+            previewItem.textContent = selectedOpt.textContent.split('—')[0].trim();
+            previewUnitPrice.textContent = `$${price.toFixed(2)}`;
+            previewQty.textContent = qty;
+            previewTotal.textContent = `$${total.toFixed(2)}`;
+        }
+
+        productSelect.addEventListener('change', updateOrderPreview);
+        quantityInput.addEventListener('input', updateOrderPreview);
+
+        // Append to Diagnostic Console
+        function logToConsole(message, data = null) {
+            const timeStr = new Date().toLocaleTimeString();
+            let entry = `[${timeStr}] ${message}`;
+            if (data) {
+                entry += `\n${typeof data === 'object' ? JSON.stringify(data, null, 2) : data}`;
+            }
+            diagnosticConsole.textContent = entry + '\n\n' + diagnosticConsole.textContent;
+        }
+
+        consoleClear.addEventListener('click', () => {
+            diagnosticConsole.textContent = `[${new Date().toLocaleTimeString()}] Console cleared.`;
+        });
+
+        // Show Toast Notification
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+
+            let icon = '✅';
+            if (type === 'error') icon = '❌';
+            if (type === 'info') icon = 'ℹ️';
+
+            toast.innerHTML = `
+                <div class="toast-icon">${icon}</div>
+                <div class="toast-body">${message}</div>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // Render Orders Table
+        function renderOrdersTable(orders) {
+            ordersCountBadge.textContent = orders.length;
+            metricOrders.textContent = orders.length;
+
+            if (!orders || orders.length === 0) {
+                ordersTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                            No orders found. Click "Create Order" to submit your first transaction!
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            ordersTableBody.innerHTML = orders.map(order => {
+                const amount = parseFloat(order.amount_usd || 0).toFixed(2);
+                const latencyMs = order.latency_seconds ? Math.round(order.latency_seconds * 1000) : '-';
+                const signature = order.signature || (order.checksum ? order.checksum.substring(0, 12) : '-');
+                const timeText = order.created_at || (order.timestamp ? new Date(order.timestamp * 1000).toLocaleTimeString() : 'Recent');
+
+                return `
+                    <tr>
+                        <td><span class="order-id-badge">${order.order_id}</span></td>
+                        <td><strong>${order.product || 'Standard Service Package'}</strong></td>
+                        <td>${order.quantity || order.items || 1}</td>
+                        <td style="font-weight: 600; color: #60a5fa;">$${amount}</td>
+                        <td><span class="signature-text">${signature}</span></td>
+                        <td><span class="latency-badge">${latencyMs} ms</span></td>
+                        <td><span class="status-pill completed">● ${order.status || 'Completed'}</span></td>
+                        <td style="color: var(--text-secondary); font-size: 12px;">${timeText}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 1. Action: Create Order (POST /api/orders)
+        orderForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const selectedOpt = productSelect.options[productSelect.selectedIndex];
+            const payload = {
+                product_id: productSelect.value,
+                product: selectedOpt.textContent.split('—')[0].trim(),
+                quantity: parseInt(quantityInput.value) || 1
+            };
+
+            btnCreateOrder.disabled = true;
+            createSpinner.style.display = 'inline-block';
+            createBtnText.textContent = 'Processing SHA-256 Work...';
+
+            const startTime = performance.now();
+
+            try {
+                const response = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const elapsed = Math.round(performance.now() - startTime);
+                metricLatency.textContent = `${elapsed} ms`;
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showToast(`Order ${data.order.order_id} created successfully!`, 'success');
+                    logToConsole(`POST /api/orders -> HTTP ${response.status} (took ${elapsed}ms)`, data);
+
+                    // Update live resource chips if returned
+                    if (data.process_resources) {
+                        metricCpu.textContent = `${data.process_resources.cpu_usage_percent.toFixed(1)}%`;
+                        metricMem.textContent = `${data.process_resources.memory_usage_mb.toFixed(1)} MB`;
+                    }
+
+                    // Refresh table
+                    loadOrdersList(false);
+                } else {
+                    showToast(data.message || 'Failed to create order', 'error');
+                    logToConsole(`POST /api/orders Failed -> HTTP ${response.status}`, data);
+                }
+            } catch (err) {
+                showToast(`Network error: ${err.message}`, 'error');
+                logToConsole(`POST /api/orders Network Error: ${err.message}`);
+            } finally {
+                btnCreateOrder.disabled = false;
+                createSpinner.style.display = 'none';
+                createBtnText.textContent = '🛍️ Create Order';
+            }
+        });
+
+        // 2. Action: View/Refresh Orders (GET /api/orders)
+        async function loadOrdersList(showNotification = true) {
+            btnRefreshOrders.disabled = true;
+            refreshSpinner.style.display = 'inline-block';
+
+            const startTime = performance.now();
+
+            try {
+                const response = await fetch('/api/orders');
+                const elapsed = Math.round(performance.now() - startTime);
+                metricLatency.textContent = `${elapsed} ms`;
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    renderOrdersTable(data.orders || []);
+                    if (showNotification) {
+                        showToast(`Loaded ${data.count || (data.orders ? data.orders.length : 0)} orders.`, 'info');
+                    }
+                    logToConsole(`GET /api/orders -> HTTP ${response.status} (${data.orders ? data.orders.length : 0} items)`);
+                } else {
+                    showToast('Failed to load orders', 'error');
+                    logToConsole(`GET /api/orders Error: HTTP ${response.status}`);
+                }
+            } catch (err) {
+                showToast(`Fetch error: ${err.message}`, 'error');
+                logToConsole(`GET /api/orders Network Error: ${err.message}`);
+            } finally {
+                btnRefreshOrders.disabled = false;
+                refreshSpinner.style.display = 'none';
+            }
+        }
+
+        btnRefreshOrders.addEventListener('click', () => loadOrdersList(true));
+
+        // 3. Action: Check Application Health (GET /api/health)
+        btnHealthCheck.addEventListener('click', async () => {
+            btnHealthCheck.disabled = true;
+            healthSpinner.style.display = 'inline-block';
+
+            const startTime = performance.now();
+
+            try {
+                const response = await fetch('/api/health');
+                const elapsed = Math.round(performance.now() - startTime);
+                metricLatency.textContent = `${elapsed} ms`;
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showToast(`Health Check: ${data.status.toUpperCase()} (Uptime: ${data.uptime_seconds}s)`, 'info');
+                    logToConsole(`GET /api/health -> HTTP 200 OK`, data);
+
+                    if (data.resources) {
+                        metricCpu.textContent = `${data.resources.cpu_usage_percent.toFixed(1)}%`;
+                        metricMem.textContent = `${data.resources.memory_usage_mb.toFixed(1)} MB`;
+                        metricOrders.textContent = data.resources.active_cached_orders;
+                    }
+                } else {
+                    showToast('Health check failed', 'error');
+                    logToConsole(`GET /api/health Failed: HTTP ${response.status}`, data);
+                }
+            } catch (err) {
+                showToast(`Health check error: ${err.message}`, 'error');
+                logToConsole(`GET /api/health Network Error: ${err.message}`);
+            } finally {
+                btnHealthCheck.disabled = false;
+                healthSpinner.style.display = 'none';
+            }
+        });
+
+        // 4. Action: Simulate Error (GET /api/simulate-error)
+        btnSimulateError.addEventListener('click', async () => {
+            btnSimulateError.disabled = true;
+            errorSpinner.style.display = 'inline-block';
+
+            const startTime = performance.now();
+
+            try {
+                const response = await fetch('/api/simulate-error');
+                const elapsed = Math.round(performance.now() - startTime);
+                metricLatency.textContent = `${elapsed} ms`;
+
+                const data = await response.json();
+
+                // Expecting 500
+                showToast(`Simulated Error Generated: HTTP ${response.status}`, 'error');
+                logToConsole(`GET /api/simulate-error -> HTTP ${response.status} (Intentional Failure)`, data);
+            } catch (err) {
+                showToast(`Simulated request completed with error: ${err.message}`, 'error');
+                logToConsole(`GET /api/simulate-error Response: ${err.message}`);
+            } finally {
+                btnSimulateError.disabled = false;
+                errorSpinner.style.display = 'none';
+            }
+        });
+
+        // 5. Action: Trigger Heavy CPU Spike (GET /heavy)
+        btnHeavyCpu.addEventListener('click', async () => {
+            btnHeavyCpu.disabled = true;
+            heavySpinner.style.display = 'inline-block';
+
+            const startTime = performance.now();
+
+            try {
+                const response = await fetch('/heavy');
+                const elapsed = Math.round(performance.now() - startTime);
+                metricLatency.textContent = `${elapsed} ms`;
+
+                const data = await response.json();
+
+                showToast(`CPU Spike Task Finished in ${elapsed}ms`, 'info');
+                logToConsole(`GET /heavy -> HTTP ${response.status} (CPU stress calculation)`, data);
+                // Refresh telemetry
+                btnHealthCheck.click();
+            } catch (err) {
+                showToast(`Compute error: ${err.message}`, 'error');
+                logToConsole(`GET /heavy Error: ${err.message}`);
+            } finally {
+                btnHeavyCpu.disabled = false;
+                heavySpinner.style.display = 'none';
+            }
+        });
+
+        // Initial setup on page load
+        updateOrderPreview();
+        loadOrdersList(false);
+        // Periodic subtle health polling every 10 seconds to keep live telemetry fresh
+        setInterval(async () => {
+            try {
+                const res = await fetch('/api/health');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.resources) {
+                        metricCpu.textContent = `${data.resources.cpu_usage_percent.toFixed(1)}%`;
+                        metricMem.textContent = `${data.resources.memory_usage_mb.toFixed(1)} MB`;
+                        metricOrders.textContent = data.resources.active_cached_orders;
+                    }
+                }
+            } catch (e) {}
+        }, 10000);
+    </script>
+</body>
+</html>

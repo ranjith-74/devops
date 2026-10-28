@@ -1,0 +1,14 @@
+# Prometheus Global Configuration
+global:
+  scrape_interval: 5s       # Scrape targets every 5 seconds (fast response for lab monitoring)
+  evaluation_interval: 5s   # Evaluate alerting and recording rules every 5 seconds
+
+# List of scrape targets
+scrape_configs:
+  - job_name: 'flask-app'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['flask-app:5000']
+        labels:
+          app: 'flask-demo'
+          environment: 'docker'
